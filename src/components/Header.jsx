@@ -1,112 +1,122 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Search, Bell } from "lucide-react";
+import { Search, Bell, ChevronDown } from "lucide-react";
 import Logo from "../assets/logo.svg";
-import NotificationsPopup from "./NotificationsPopup"; // 👈 new import
-import Button from "./ThemeButton";
+import NotificationsPopup from "./NotificationsPopup";
 
 export default function Header() {
   const location = useLocation();
   const navigate = useNavigate();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [user, setUser] = useState(null); // ✅ user state
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [notificationsOpen, setNotificationsOpen] = useState(false); // 👈 notification state
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
   const dropdownRef = useRef(null);
   const notifRef = useRef(null);
 
-  // ✅ Check auth state
-  const checkAuth = () => {
-    const token = localStorage.getItem("authToken");
-    setIsLoggedIn(!!token);
-  };
-
-  // ✅ On mount + auth change listener
+  // ✅ Auth check + Sync user
   useEffect(() => {
-    checkAuth();
-    window.addEventListener("authChange", checkAuth);
+    const loadUser = () => {
+      const token = localStorage.getItem("authToken");
+      setIsLoggedIn(!!token);
+
+      const storedUser = localStorage.getItem("user");
+      setUser(storedUser ? JSON.parse(storedUser) : null);
+    };
+
+    loadUser();
+
+    // ✅ listen for custom events (auth/profile updates)
+    const handleAuthChange = () => loadUser();
+    window.addEventListener("authChange", handleAuthChange);
+
+    // ✅ listen for localStorage changes (other tabs/updates)
+    const handleStorage = (e) => {
+      if (e.key === "user" || e.key === "authToken") {
+        loadUser();
+      }
+    };
+    window.addEventListener("storage", handleStorage);
+
     return () => {
-      window.removeEventListener("authChange", checkAuth);
+      window.removeEventListener("authChange", handleAuthChange);
+      window.removeEventListener("storage", handleStorage);
     };
   }, []);
-
-  // ✅ Close dropdown on outside click
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
-        setDropdownOpen(false);
-      }
-      if (notifRef.current && !notifRef.current.contains(e.target)) {
-        setNotificationsOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  // ✅ Menus
-  const guestMenu = [
-  { name: "Log in", path: "/login" },
-  { name: "Register", path: "/signup" }, // ✅ same path
-];
-
-
-  const loggedInMenu = [
-    { name: "Dashboard", path: "/dashboard" },
-    { name: "Organizations", path: "/organizations" },
-    { name: "Missions", path: "/missions" },
-  ];
 
   // ✅ Logout
   const handleLogout = () => {
     localStorage.clear();
-    window.dispatchEvent(new Event("authChange"));
+    window.dispatchEvent(new Event("authChange")); // trigger refresh
     navigate("/login");
   };
 
+  // ✅ Nav links for logged in users
+  const navLinks = [
+    { name: "Home", path: "/" },
+    { name: "Organizations", path: "/organizations" },
+    { name: "Missions", path: "/missions" },
+  ];
+
   return (
-    <header className="bg-white w-full border-b-4 border-[#D9D9D9] relative z-10">
-      <div className="max-w-[1600px] mx-auto flex justify-between items-center px-4 md:px-8 py-4">
-        
-        {/* Logo */}
+    <header className="bg-white w-full shadow-sm relative z-10">
+      <div className="max-w-[1440px] mx-auto flex justify-between items-center px-6 py-4">
+        {/* ✅ Logo */}
         <Link to="/">
-          <img src={Logo} alt="Logo" className="w-40 sm:w-48 md:w-60" />
+          <img src={Logo} alt="Logo" className="w-32" />
         </Link>
 
-        {/* Menu */}
-        <div className="flex items-center gap-3 sm:gap-5">
-          {!isLoggedIn ? (
-            // ✅ Guest menu
-            guestMenu.map((item) => (
+        {/* ✅ Search bar (only when logged in) */}
+        {isLoggedIn && (
+          <div className="relative flex-1 max-w-md ml-10 hidden md:block">
+            <input
+              type="text"
+              placeholder="Search ..."
+              className="w-full rounded-full pl-4 pr-10 py-2 border border-gray-200 shadow-sm focus:ring-2 focus:ring-[#0166FF] outline-none"
+            />
+            <Search className="w-5 h-5 absolute right-3 top-1/2 -translate-y-1/2 text-gray-500" />
+          </div>
+        )}
+
+        {/* ✅ Right Side */}
+        <div className="flex items-center gap-6">
+          {/* ----------- Guest (Not Logged In) ----------- */}
+          {!isLoggedIn && (
+            <div className="flex items-center gap-4">
               <Link
-                key={item.path}
-                to={item.path}
-                className={`px-4 py-2 rounded-full border border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white transition ${
-                  location.pathname === item.path ? "bg-blue-500 text-white" : ""
+                to="/login"
+                className={`px-6 py-2 rounded-full font-medium transition ${
+                  location.pathname === "/login"
+                    ? "bg-[#0166FF] text-white border border-[#0166FF]"
+                    : "bg-white text-[#0166FF] border border-[#0166FF] hover:bg-[#0166FF] hover:text-white"
                 }`}
               >
-                {item.name}
+                Login
               </Link>
-            ))
-          ) : (
-            <>
-              {/* Search */}
-              <div className="relative hidden sm:block">
-                <input
-                  type="text"
-                  placeholder="Search..."
-                  className="pl-10 pr-4 py-2 border rounded-full focus:ring-2 focus:ring-blue-500 outline-none"
-                />
-                <Search className="w-5 h-5 absolute left-3 top-2.5 text-gray-400" />
-              </div>
+              <Link
+                to="/signup"
+                className={`px-6 py-2 rounded-full font-medium transition ${
+                  location.pathname === "/signup"
+                    ? "bg-[#0166FF] text-white border border-[#0166FF]"
+                    : "bg-white text-[#0166FF] border border-[#0166FF] hover:bg-[#0166FF] hover:text-white"
+                }`}
+              >
+                Register
+              </Link>
+            </div>
+          )}
 
-              {/* Logged In Menu */}
-              {loggedInMenu.map((item) => (
+          {/* ----------- Logged In Version ----------- */}
+          {isLoggedIn && (
+            <>
+              {/* ✅ Nav Links */}
+              {navLinks.map((item) => (
                 <Link
                   key={item.path}
                   to={item.path}
-                  className={`px-4 py-2 rounded-full hover:bg-blue-500 hover:text-white transition ${
+                  className={`text-sm font-medium hover:text-[#0166FF] ${
                     location.pathname === item.path
-                      ? "bg-blue-500 text-white"
+                      ? "text-[#0166FF]"
                       : "text-gray-700"
                   }`}
                 >
@@ -114,49 +124,55 @@ export default function Header() {
                 </Link>
               ))}
 
-              {/* Notification Icon */}
+              {/* ✅ Notifications */}
               <div className="relative" ref={notifRef}>
                 <button
                   className="relative p-2 rounded-full hover:bg-gray-100"
                   onClick={() => setNotificationsOpen(!notificationsOpen)}
                 >
-                  <Bell className="w-6 h-6 text-gray-600" />
+                  <Bell className="w-6 h-6 text-gray-700" />
                   <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
                 </button>
-
                 {notificationsOpen && (
-                  <NotificationsPopup onClose={() => setNotificationsOpen(false)} />
+                  <NotificationsPopup
+                    onClose={() => setNotificationsOpen(false)}
+                  />
                 )}
               </div>
 
-              {/* Profile Dropdown */}
-              <div className="relative" ref={dropdownRef}>
+              {/* ✅ Profile Dropdown */}
+              <div
+                className="relative flex items-center gap-2 cursor-pointer"
+                ref={dropdownRef}
+                onClick={() => setDropdownOpen(!dropdownOpen)}
+              >
                 <img
                   src="https://i.pravatar.cc/40"
                   alt="Profile"
-                  className="w-10 h-10 rounded-full cursor-pointer border border-gray-300"
-                  onClick={() => setDropdownOpen(!dropdownOpen)}
+                  className="w-10 h-10 rounded-full border-2 border-[#0166FF]"
                 />
+                <span className="font-medium text-gray-700">
+                  {user?.name || "User"}
+                </span>
+                <ChevronDown className="w-4 h-4 text-gray-500" />
+
                 {dropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white border rounded-lg shadow-lg overflow-hidden z-50">
+                  <div className="absolute right-0 top-12 w-48 bg-white border rounded-lg shadow-lg overflow-hidden z-50">
                     <Link
                       to="/profile"
                       className="block px-4 py-2 hover:bg-gray-100 text-gray-700"
-                      onClick={() => setDropdownOpen(false)}
                     >
                       Profile
                     </Link>
                     <Link
                       to="/editprofile"
                       className="block px-4 py-2 hover:bg-gray-100 text-gray-700"
-                      onClick={() => setDropdownOpen(false)}
                     >
                       Edit Profile
                     </Link>
                     <Link
                       to="/settings"
                       className="block px-4 py-2 hover:bg-gray-100 text-gray-700"
-                      onClick={() => setDropdownOpen(false)}
                     >
                       Settings
                     </Link>

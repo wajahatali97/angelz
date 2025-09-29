@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import FormField from "../campaigns/FormField.jsx";
 import { Link, useNavigate } from "react-router-dom";
-import Button from "../components/ThemeButton.jsx"; // 👈 import
+import Button from "../components/ThemeButton.jsx";
+import SocialLogin from "../components/SocialLogin.jsx";
 
 export default function SignupPage() {
   const navigate = useNavigate();
@@ -71,16 +72,16 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-6 w-full max-w-4xl mx-auto mt-14">
-      <div className="relative bg-white rounded-3xl shadow-[0_0px_25px_-3px_var(--tw-shadow-color),_0_0px_4px_-44px_var(--tw-shadow-color)] shadow-gray-500/80 w-full p-6">
-        <h2 className="text-2xl font-bold text-center">Create Account</h2>
-        <p className="text-gray-500 text-center mb-6">
+    <div className="min-h-screen flex items-center justify-center p-6">
+      <div className="relative bg-white rounded-3xl shadow-[0_0px_25px_-3px_var(--tw-shadow-color),_0_0px_4px_-44px_var(--tw-shadow-color)] shadow-gray-500/80 w-[971px] h-[788px] p-10 flex flex-col justify-center">
+        <h2 className="text-3xl font-bold text-center mb-3">Create Account</h2>
+        <p className="text-gray-500 text-center mb-10">
           Welcome again you have been missed!
         </p>
 
-        <form className="w-full max-w-sm mx-auto" onSubmit={handleSubmit}>
+        <form className="w-full max-w-md mx-auto" onSubmit={handleSubmit}>
           <FormField
-            label="Full Name"
+            label="Name"
             type="text"
             name="name"
             placeholder="Joe Adams"
@@ -123,8 +124,7 @@ export default function SignupPage() {
             onChange={handleChange}
           />
 
-          {/* ✅ Reusable Button Component */}
-          <Button type="submit" loading={loading}>
+          <Button type="submit" loading={loading} className="mt-4 w-full">
             Create Account
           </Button>
 
@@ -132,35 +132,15 @@ export default function SignupPage() {
           {success && <p className="text-green-500 mt-2">{success}</p>}
         </form>
 
-        <p className="text-center mt-4">
+        <p className="text-center mt-2">
           Already have an account?{" "}
           <Link to="/login" className="text-blue-500">
             Log in
           </Link>
         </p>
 
-        <div className="flex justify-center space-x-4 mt-6">
-          <button className="border p-2 rounded-lg hover:shadow">
-            <img
-              src="https://img.icons8.com/?size=100&id=JvOSspDsPpwP&format=png&color=000000"
-              alt="Google"
-              className="h-6 w-6"
-            />
-          </button>
-          <button className="border p-2 rounded-lg hover:shadow">
-            <img
-              src="https://img.icons8.com/?size=100&id=890&format=png&color=000000"
-              alt="Apple"
-              className="h-6 w-6"
-            />
-          </button>
-          <button className="border p-2 rounded-lg hover:shadow">
-            <img
-              src="https://img.icons8.com/?size=100&id=uLWV5A9vXIPu&format=png&color=000000"
-              alt="Facebook"
-              className="h-6 w-6"
-            />
-          </button>
+        <div className="mt-6">
+          <SocialLogin />
         </div>
       </div>
     </div>

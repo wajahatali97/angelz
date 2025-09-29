@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import FormField from "../campaigns/FormField.jsx"; // Reusable field
+import FormField from "../campaigns/FormField.jsx";
+import { getProfile, updateProfile } from "../services/userService.js";
 
 export default function EditProfile() {
   const navigate = useNavigate();
@@ -8,61 +9,55 @@ export default function EditProfile() {
   const [formData, setFormData] = useState({
     name: "",
     last_name: "",
-    contact_no: "",
-    description: "", // bio
     email: "",
     password: "",
+    contact_no: "",
+    description: "",
+    address: "",
+    city: "",
+    state: "",
+    zip: "",
+    country: "",
+    timing: "",
     expertise: "",
-    preferences: "",
-    available_timing: [
-      { day: "Monday", from: "09:00", to: "17:00" },
-      { day: "Tuesday", from: "10:00", to: "16:00" },
-    ],
+    volunteering: "",
+    organization: "",
   });
 
-  // ✅ Load current user profile from API
+  // 🟢 Load profile data
   useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        const token = localStorage.getItem("authToken");
-        const res = await fetch("/api/users/user-profile", {
-          method: "GET",
-          headers: { Authorization: `Bearer ${token}` },
+    (async () => {
+      const user = await getProfile();
+      console.log("Profile API response:", user);
+
+      if (user) {
+        let finalEmail = user.email;
+
+        // 🟢 Fallback to localStorage email if API gives empty
+        if (!finalEmail || finalEmail.trim() === "") {
+          const storedUser = JSON.parse(localStorage.getItem("userProfile"));
+          if (storedUser?.email) {
+            finalEmail = storedUser.email;
+          }
+        }
+
+        setFormData({
+          ...user,
+          email: finalEmail || "",
         });
 
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.message || "Failed to load profile");
-
-        const userData = data.userDetails;
-
-        setFormData((prev) => ({
-          ...prev,
-          name: userData.name || "",
-          last_name: userData.last_name || "",
-          contact_no: userData.contact_no || "",
-          description: userData.description || "",
-          email: userData.email || "",
-          password: "",
-          expertise: userData.expertise || "",
-          preferences: userData.preferences || "",
-        }));
-
-        if (userData.image) setProfileImage(userData.image);
-      } catch (err) {
-        console.error("Profile fetch error:", err);
+        if (user.image) setProfileImage(user.image);
       }
-    };
-
-    fetchUserData();
+    })();
   }, []);
 
-  // ✅ Handle change
+  // 🟢 Handle change
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // ✅ Handle image upload
+  // 🟢 Handle image upload
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -72,41 +67,20 @@ export default function EditProfile() {
     }
   };
 
-  // ✅ Submit (update API)
+  // 🟢 Submit
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const token = localStorage.getItem("authToken");
+      const updated = { ...formData, image: profileImage };
+      await updateProfile(updated);
 
-      // ✅ Clean payload (email not sent, password optional)
-      const payload = {
-        name: formData.name,
-        last_name: formData.last_name,
-        contact_no: formData.contact_no,
-        description: formData.description,
-        ...(formData.password ? { password: formData.password } : {}),
-        available_timing: formData.available_timing,
-        expertise: formData.expertise ? [formData.expertise] : [],
-        preferences: formData.preferences ? [formData.preferences] : [],
-      };
+      // 🟢 LocalStorage me bhi update karo
+      localStorage.setItem("userProfile", JSON.stringify(updated));
 
-      const res = await fetch("/api/users/edit-profile", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(payload),
-      });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Update failed");
+      // 🟢 Header ko notify karo
+      window.dispatchEvent(new Event("authChange"));
 
       alert("✅ Profile updated successfully!");
-      console.log("Updated user data:", data);
-
-      // 🔄 Notify ProfilePage to reload fresh data
-      window.dispatchEvent(new Event("userUpdated"));
       navigate("/profile");
     } catch (err) {
       console.error(err);
@@ -148,7 +122,6 @@ export default function EditProfile() {
 
         {/* Profile Form */}
         <form onSubmit={handleSubmit}>
-          {/* Basic fields */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormField
               label="First Name"
@@ -164,13 +137,14 @@ export default function EditProfile() {
               value={formData.last_name}
               onChange={handleChange}
             />
+            {/* 🟢 Email is fixed from localStorage if API empty */}
             <FormField
               label="Email"
               type="text"
               name="email"
               value={formData.email}
               onChange={handleChange}
-              disabled // ✅ Email is now locked
+              disabled
             />
             <FormField
               label="Password"
@@ -187,6 +161,69 @@ export default function EditProfile() {
               value={formData.contact_no}
               onChange={handleChange}
             />
+            <FormField
+              label="Address"
+              type="text"
+              name="address"
+              value={formData.address}
+              onChange={handleChange}
+            />
+            <FormField
+              label="City"
+              type="text"
+              name="city"
+              value={formData.city}
+              onChange={handleChange}
+            />
+            <FormField
+              label="State"
+              type="text"
+              name="state"
+              value={formData.state}
+              onChange={handleChange}
+            />
+            <FormField
+              label="Zip"
+              type="text"
+              name="zip"
+              value={formData.zip}
+              onChange={handleChange}
+            />
+            <FormField
+              label="Country"
+              type="text"
+              name="country"
+              value={formData.country}
+              onChange={handleChange}
+            />
+            <FormField
+              label="Timing"
+              type="text"
+              name="timing"
+              value={formData.timing}
+              onChange={handleChange}
+            />
+            <FormField
+              label="Expertise"
+              type="text"
+              name="expertise"
+              value={formData.expertise}
+              onChange={handleChange}
+            />
+            <FormField
+              label="Volunteering"
+              type="text"
+              name="volunteering"
+              value={formData.volunteering}
+              onChange={handleChange}
+            />
+            <FormField
+              label="Organization"
+              type="text"
+              name="organization"
+              value={formData.organization}
+              onChange={handleChange}
+            />
           </div>
 
           {/* Bio */}
@@ -200,7 +237,6 @@ export default function EditProfile() {
             maxLength={140}
           />
 
-          {/* Submit */}
           <button
             type="submit"
             className="w-full mt-6 bg-blue-500 text-white py-2 rounded-full hover:bg-blue-600"

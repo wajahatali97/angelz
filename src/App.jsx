@@ -7,23 +7,27 @@ import SignupPage from "./pages/SignupPage";
 import DashboardPage from "./pages/Dashboard";
 import EditProfile from "./pages/EditProfile";
 import ProfilePage from "./pages/ProfilePage";
-import SettingsPage from "./pages/SettingsPage"; // ✅ added
+import SettingsPage from "./pages/SettingsPage";
 import bgImage from "./assets/bg.svg";
-import Home from "./pages/Home";
 import OrganizationProfile from "./pages/OrganizationProfile";
 import CreateMission from "./pages/CreateMission";
 import { PrivateRoute, PublicRoute } from "./components/RouteGuard";
 
+// ✅ Detail Pages
+import CompletedActPage from "./components/CompletedActPage";
+import PendingActPage from "./components/PendingActPage";
+import ActDetailPage from "./pages/ActDetailPage";
+
 export default function App() {
   const location = useLocation();
 
-  // ✅ Footer sirf login/signup pe hide hoga
+  // ✅ Footer sirf login/signup pages par hide hoga
   const isAuthPage =
     location.pathname === "/login" || location.pathname === "/signup";
 
   return (
     <div className="flex flex-col min-h-screen">
-      {/* ✅ Header hamesha dikhai dega */}
+      {/* ✅ Header hamesha show hoga */}
       <Header />
 
       {/* ✅ Background wrapper */}
@@ -36,8 +40,17 @@ export default function App() {
         }}
       >
         <Routes>
+          {/* ✅ Root route ko login page banaya */}
+          <Route
+            path="/"
+            element={
+              <PublicRoute>
+                <LoginPage />
+              </PublicRoute>
+            }
+          />
+
           {/* ✅ Public Routes */}
-          <Route path="/" element={<Home />} />
           <Route
             path="/login"
             element={
@@ -47,14 +60,13 @@ export default function App() {
             }
           />
           <Route
-                path="/signup"
-                element={
-                  <PublicRoute>
-                    <SignupPage />
-                  </PublicRoute>
-                }
-              />
-
+            path="/signup"
+            element={
+              <PublicRoute>
+                <SignupPage />
+              </PublicRoute>
+            }
+          />
 
           {/* ✅ Private Routes */}
           <Route
@@ -73,7 +85,6 @@ export default function App() {
               </PrivateRoute>
             }
           />
-
           <Route
             path="/missions"
             element={
@@ -82,8 +93,6 @@ export default function App() {
               </PrivateRoute>
             }
           />
-
-
           <Route
             path="/profile"
             element={
@@ -108,15 +117,37 @@ export default function App() {
               </PrivateRoute>
             }
           />
+
+          {/* ✅ Detail Pages */}
+          <Route
+            path="/act/:id"
+            element={
+              <PrivateRoute>
+                <ActDetailPage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/completed/:id"
+            element={
+              <PrivateRoute>
+                <CompletedActPage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/pending/:id"
+            element={
+              <PrivateRoute>
+                <PendingActPage />
+              </PrivateRoute>
+            }
+          />
         </Routes>
       </div>
-
-     
 
       {/* ✅ Footer sirf login/signup pe hide hoga */}
       {!isAuthPage && <Footer />}
     </div>
-    
-
   );
 }

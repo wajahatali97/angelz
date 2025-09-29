@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import FormField from "../campaigns/FormField.jsx";
-import { Link } from "react-router-dom";
-import Button from "../components/ThemeButton.jsx"; // ✅ Button component import
+import Button from "../components/ThemeButton.jsx"; 
+import SocialLogin from "../components/SocialLogin.jsx";
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -23,7 +23,6 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      // 🔹 API call
       const res = await fetch("/api/users/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -69,20 +68,22 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center z-0">
-      <div className="relative bg-white rounded-3xl shadow-lg w-full max-w-[667px]">
-        <div className="p-6 max-w-96 w-full mx-auto py-10">
-          <h2 className="text-2xl font-bold text-center">Welcome back!</h2>
-          <p className="text-gray-500 text-center mb-6">
+    <div className="min-h-screen flex items-center justify-center p-6">
+      <div className="relative bg-white rounded-3xl shadow-lg w-[668px] min-h-[700px] p-10 flex flex-col justify-center">
+        {/* 👇 Centered content */}
+        <div className="max-w-md w-full mx-auto">
+          <h2 className="text-3xl font-bold text-center mb-3">Welcome back!</h2>
+          <p className="text-gray-500 text-center mb-10">
             Welcome again, you have been missed!
           </p>
 
           <form onSubmit={handleLogin}>
             <FormField
-              label="Client ID"
-              type="text"
+              label="Email"
+              type="email"
               placeholder="volunteer.angel@example.com"
               value={email}
+              required
               onChange={(e) => setEmail(e.target.value)}
             />
 
@@ -91,6 +92,7 @@ export default function LoginPage() {
               type="password"
               placeholder="*******"
               value={password}
+              required
               onChange={(e) => setPassword(e.target.value)}
             />
 
@@ -100,22 +102,22 @@ export default function LoginPage() {
               </a>
             </div>
 
-            {/* ✅ Reusable Button */}
-            <Button
-              type="submit"
-              loading={loading}
-              className="w-full bg-blue-500 text-white py-2 rounded-full hover:bg-blue-600 disabled:opacity-50"
-            >
+            <Button type="submit" loading={loading} className="w-full mt-2">
               Log in
             </Button>
           </form>
 
-          <p className="text-center mt-4">
+          <p className="text-center mt-6">
             Don’t have an account?{" "}
             <Link to="/signup" className="text-blue-500">
               Signup
             </Link>
           </p>
+
+          {/* 👇 Social Login */}
+          <div className="mt-8">
+            <SocialLogin />
+          </div>
         </div>
       </div>
     </div>

@@ -6,6 +6,7 @@ import {
   CheckCircle,
   Hourglass,
   Award,
+  User,
 } from "lucide-react";
 import {
   LineChart,
@@ -18,6 +19,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
+import ProfileInfo from "../components/ProfileInfo";
 
 export default function Dashboard() {
   const [user, setUser] = useState(null);
@@ -45,7 +47,7 @@ export default function Dashboard() {
       {/* Top Bar */}
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-2xl font-bold text-gray-800">
-          Welcome, {user ? user.firstName : "Guest"} 👋
+          Welcome, {user ? user.firstName : ""} 👋
         </h1>
 
         <div className="flex items-center gap-4">
