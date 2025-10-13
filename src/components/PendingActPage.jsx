@@ -1,13 +1,14 @@
 import React, { useState, useEffect, useRef } from "react";
-import { MapPin, ChevronLeft, CalendarDays } from "lucide-react";
+import { MapPin, ChevronLeft, CalendarDays, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-export default function CompletedActPage() {
+export default function PendingActPage() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [showModal, setShowModal] = useState(false);
   const menuRef = useRef(null);
   const navigate = useNavigate();
 
-  // Close menu when clicking outside
+  // ✅ Close menu when clicking outside
   useEffect(() => {
     function handleClickOutside(event) {
       if (menuRef.current && !menuRef.current.contains(event.target)) {
@@ -15,14 +16,12 @@ export default function CompletedActPage() {
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   return (
-    <div className="max-w-6xl mx-auto bg-white flex flex-col h-full">
-      {/* Top Banner with spacing from header */}
+    <div className="max-w-6xl mx-auto bg-white flex flex-col h-full relative">
+      {/* ---------- Top Banner ---------- */}
       <div className="mt-10 relative">
         <img
           src="https://images.pexels.com/photos/3184292/pexels-photo-3184292.jpeg"
@@ -33,13 +32,13 @@ export default function CompletedActPage() {
 
         {/* Back Arrow */}
         <button
-          onClick={() => navigate("/profile")} // ✅ back only to profile/completed list
+          onClick={() => navigate("/profile")}
           className="absolute top-3 left-3"
         >
           <ChevronLeft className="w-6 h-6 text-white" />
         </button>
 
-        {/* 3 Dots Menu (horizontal) */}
+        {/* 3 Dots Menu */}
         <div className="absolute top-3 right-3" ref={menuRef}>
           <button
             onClick={() => setMenuOpen(!menuOpen)}
@@ -59,7 +58,7 @@ export default function CompletedActPage() {
           )}
         </div>
 
-        {/* Org Title Left + Time Right */}
+        {/* Org Title + Time */}
         <div className="absolute bottom-3 inset-x-0 flex items-center justify-between px-4 text-white">
           <div>
             <h2 className="text-lg font-semibold">The Joshua Organization</h2>
@@ -75,9 +74,9 @@ export default function CompletedActPage() {
         </div>
       </div>
 
-      {/* Content Section */}
+      {/* ---------- Content ---------- */}
       <div className="px-6 pb-10">
-        {/* Location + Points + Pending + ZappIt */}
+        {/* Location + Points + Pending + Opt-out */}
         <div className="flex items-center justify-between mb-8 mt-10">
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2 text-gray-700 text-sm">
@@ -85,7 +84,6 @@ export default function CompletedActPage() {
               Waterloo Toronto
             </div>
 
-            {/* Points + Pending inline */}
             <div className="flex items-center gap-3">
               <span className="text-sm font-medium text-gray-800">
                 <strong>150</strong> Points Earned
@@ -96,13 +94,16 @@ export default function CompletedActPage() {
             </div>
           </div>
 
-          {/* Zapp It Button on right */}
-          <button className="px-5 py-2 bg-blue-600 text-white rounded-full text-xs font-medium shadow hover:bg-blue-700 transition">
-            Zapp It
+          {/* ✅ Opt-out Button */}
+          <button
+            onClick={() => setShowModal(true)}
+            className="px-5 py-2 bg-blue-600 text-white rounded-full text-xs font-medium shadow hover:bg-blue-700 transition"
+          >
+            Opt-out
           </button>
         </div>
 
-        {/* Images + Info */}
+        {/* ---------- Images + Info ---------- */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch">
           {/* Left Images */}
           <div className="grid grid-cols-2 gap-3">
@@ -156,16 +157,38 @@ export default function CompletedActPage() {
                 clean water, sustainable agriculture projects, and educational
                 resources. We partner directly with community leaders to
                 implement long-term solutions that foster self-sufficiency and
-                create lasting change. We believe that by investing in these
-                foundational pillars, we can create meaningful impact in
-                people’s lives. Our Sector B initiative continues to expand with
-                new projects, partnerships, and innovative approaches to
-                sustainable development.
+                create lasting change.
               </p>
             </div>
           </div>
         </div>
       </div>
+
+      {/* ✅ Modal (Request Processed) */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl shadow-lg p-8 w-[90%] max-w-md text-center relative animate-fadeIn">
+            {/* Close Button */}
+            <button
+              onClick={() => setShowModal(false)}
+              className="absolute top-3 right-3 text-gray-500 hover:text-gray-700"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            {/* Emoji */}
+            <div className="text-5xl mb-4">😊</div>
+
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">
+              Your request has been processed.
+            </h2>
+            <p className="text-gray-600 text-sm">
+              You will be notified shortly whether it has been accepted or
+              rejected.
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

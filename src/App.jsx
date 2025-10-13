@@ -12,11 +12,16 @@ import bgImage from "./assets/bg.svg";
 import OrganizationProfile from "./pages/OrganizationProfile";
 import CreateMission from "./pages/CreateMission";
 import { PrivateRoute, PublicRoute } from "./components/RouteGuard";
+import CreateMissionPage from "./pages/CreateMissionPage";
+
 
 // ✅ Detail Pages
 import CompletedActPage from "./components/CompletedActPage";
 import PendingActPage from "./components/PendingActPage";
 import ActDetailPage from "./pages/ActDetailPage";
+
+// ✅ NEW: LeaderBoard Page
+import LeaderBoardPage from "./pages/LeaderBoardPage";
 
 export default function App() {
   const location = useLocation();
@@ -142,6 +147,24 @@ export default function App() {
                 <PendingActPage />
               </PrivateRoute>
             }
+          />
+
+          {/* ✅ NEW: LeaderBoard Route */}
+          <Route
+            path="/leaderboard"
+            element={
+              <PrivateRoute>
+                <LeaderBoardPage />
+              </PrivateRoute>
+            }
+          />
+          <Route 
+          path="/create-mission" 
+          element={
+            <PrivateRoute>
+          <CreateMissionPage />
+          </PrivateRoute>
+          } 
           />
         </Routes>
       </div>

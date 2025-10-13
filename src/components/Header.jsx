@@ -8,7 +8,7 @@ export default function Header() {
   const location = useLocation();
   const navigate = useNavigate();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [user, setUser] = useState(null); // ✅ user state
+  const [user, setUser] = useState(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const dropdownRef = useRef(null);
@@ -26,11 +26,9 @@ export default function Header() {
 
     loadUser();
 
-    // ✅ listen for custom events (auth/profile updates)
     const handleAuthChange = () => loadUser();
     window.addEventListener("authChange", handleAuthChange);
 
-    // ✅ listen for localStorage changes (other tabs/updates)
     const handleStorage = (e) => {
       if (e.key === "user" || e.key === "authToken") {
         loadUser();
@@ -44,14 +42,31 @@ export default function Header() {
     };
   }, []);
 
+  // ✅ Outside Click Detection for both dropdowns
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (notifRef.current && !notifRef.current.contains(event.target)) {
+        setNotificationsOpen(false);
+      }
+
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
   // ✅ Logout
   const handleLogout = () => {
     localStorage.clear();
-    window.dispatchEvent(new Event("authChange")); // trigger refresh
+    window.dispatchEvent(new Event("authChange"));
     navigate("/login");
   };
 
-  // ✅ Nav links for logged in users
   const navLinks = [
     { name: "Home", path: "/" },
     { name: "Organizations", path: "/organizations" },
@@ -61,12 +76,10 @@ export default function Header() {
   return (
     <header className="bg-white w-full shadow-sm relative z-10">
       <div className="max-w-[1440px] mx-auto flex justify-between items-center px-6 py-4">
-        {/* ✅ Logo */}
         <Link to="/">
           <img src={Logo} alt="Logo" className="w-32" />
         </Link>
 
-        {/* ✅ Search bar (only when logged in) */}
         {isLoggedIn && (
           <div className="relative flex-1 max-w-md ml-10 hidden md:block">
             <input
@@ -78,9 +91,7 @@ export default function Header() {
           </div>
         )}
 
-        {/* ✅ Right Side */}
         <div className="flex items-center gap-6">
-          {/* ----------- Guest (Not Logged In) ----------- */}
           {!isLoggedIn && (
             <div className="flex items-center gap-4">
               <Link
@@ -106,10 +117,8 @@ export default function Header() {
             </div>
           )}
 
-          {/* ----------- Logged In Version ----------- */}
           {isLoggedIn && (
             <>
-              {/* ✅ Nav Links */}
               {navLinks.map((item) => (
                 <Link
                   key={item.path}
@@ -176,6 +185,25 @@ export default function Header() {
                     >
                       Settings
                     </Link>
+
+                    {/* ✅ New Leaderboard link */}
+                    <Link
+                      to="/leaderboard"
+                      className="block px-4 py-2 hover:bg-gray-100 text-gray-700"
+                    >
+                      Leader Board
+                    </Link>
+                    
+                    <Link
+                      to="/create-mission"
+                      className="block px-4 py-2 hover:bg-gray-100 text-gray-700"
+                    >
+                      Create Mission
+                    </Link>
+
+                    
+
+
                     <button
                       onClick={handleLogout}
                       className="w-full text-left px-4 py-2 hover:bg-gray-100 text-red-500"

@@ -45,7 +45,7 @@ export default function SignupPage() {
         password: form.password,
         confirmPassword: form.confirmPassword,
         type: form.type,
-        contact_no: "03101292626",
+        contact_no: form.contact_no || "0000000000", // Default contact number
       };
 
       const res = await fetch("/api/users/register", {
